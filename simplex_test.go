@@ -158,19 +158,19 @@ func TestNew(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, mat.Equal(mat.NewDense(1, 3, []float64{0, 0, 0}), y))
 
-	inputVarIndex, err := cf.FindInputVariable(y, 2)
+	enteringVarIndex, err := cf.FindEnteringVariable(y, 2)
 	require.NoError(t, err)
-	assert.Equal(t, 2, inputVarIndex)
+	assert.Equal(t, 2, enteringVarIndex)
 
-	d, err := cf.SolveBd(inputVarIndex)
+	d, err := cf.SolveBd(enteringVarIndex)
 	require.NoError(t, err)
 	assert.True(t, mat.Equal(mat.NewDense(3, 1, []float64{5, 2, 3}), d))
-	x, outputVarIndex, err := cf.FindOutputVariable(d)
+	x, leavingVarIndex, err := cf.FindLeavingVariable(d)
 	require.NoError(t, err)
-	assert.Equal(t, 2, outputVarIndex)
+	assert.Equal(t, 2, leavingVarIndex)
 	assert.Equal(t, 8.0, x)
 
-	err = cf.Update(d, y, x, inputVarIndex, outputVarIndex)
+	err = cf.Update(d, y, x, enteringVarIndex, leavingVarIndex)
 	require.NoError(t, err)
 	assert.True(t, mat.Equal(mat.NewDense(3, 1, []float64{2, 1, 8}), cf.xBStar))
 
