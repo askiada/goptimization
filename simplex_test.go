@@ -9,7 +9,7 @@ import (
 )
 
 func TestSimplex(t *testing.T) {
-	z := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
+	c := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
 	A := mat.NewDense(3, 4, []float64{
 		2, 4, 5, 7,
 		1, 1, 2, 2,
@@ -17,7 +17,7 @@ func TestSimplex(t *testing.T) {
 	})
 	b := mat.NewDense(3, 1, []float64{42, 17, 24})
 
-	totalIter, results, score, err := Simplex(z, A, b, 10)
+	totalIter, results, score, err := Simplex(c, A, b, 10)
 	require.NoError(t, err)
 	assert.Equal(t, 2, totalIter)
 	assert.True(t, mat.EqualApprox(mat.NewDense(7, 1, []float64{3, 0, 7, 0, 1, 0, 0}), results, 0.000001))
@@ -25,7 +25,7 @@ func TestSimplex(t *testing.T) {
 }
 
 func TestSimplex2(t *testing.T) {
-	z := mat.NewDense(1, 2, []float64{100, 85})
+	c := mat.NewDense(1, 2, []float64{100, 85})
 	A := mat.NewDense(3, 2, []float64{
 		12, 24,
 		9, 5,
@@ -33,7 +33,7 @@ func TestSimplex2(t *testing.T) {
 	})
 	b := mat.NewDense(3, 1, []float64{480, 180, 720})
 
-	totalIter, results, score, err := Simplex(z, A, b, 10)
+	totalIter, results, score, err := Simplex(c, A, b, 10)
 	require.NoError(t, err)
 	assert.Equal(t, 2, totalIter)
 	assert.True(t, mat.EqualApprox(mat.NewDense(5, 1, []float64{15, 9, 84, 0, 0}), results, 0.000001))
@@ -41,7 +41,7 @@ func TestSimplex2(t *testing.T) {
 }
 
 func TestSimplex3(t *testing.T) {
-	z := mat.NewDense(1, 3, []float64{4, 3, 5})
+	c := mat.NewDense(1, 3, []float64{4, 3, 5})
 	A := mat.NewDense(3, 3, []float64{
 		4, 12, 8,
 		4, 4, 8,
@@ -49,15 +49,62 @@ func TestSimplex3(t *testing.T) {
 	})
 	b := mat.NewDense(3, 1, []float64{4800, 4000, 5600})
 
-	totalIter, results, score, err := Simplex(z, A, b, 10)
+	totalIter, results, score, err := Simplex(c, A, b, 10)
 	require.NoError(t, err)
 	assert.Equal(t, 3, totalIter)
 	assert.True(t, mat.EqualApprox(mat.NewDense(6, 1, []float64{200, 100, 350, 0, 0, 0}), results, 0.000001))
 	assert.Equal(t, 2850.0, score)
 }
 
+func TestSimplex4(t *testing.T) {
+	c := mat.NewDense(1, 3, []float64{3, 2, 4})
+	A := mat.NewDense(3, 3, []float64{
+		1, 1, 2,
+		2, 0, 3,
+		2, 1, 3,
+	})
+	b := mat.NewDense(3, 1, []float64{4, 5, 7})
+
+	totalIter, results, score, err := Simplex(c, A, b, 10)
+	require.NoError(t, err)
+	assert.Equal(t, 3, totalIter)
+	assert.True(t, mat.EqualApprox(mat.NewDense(6, 1, []float64{2.5, 1.5, 0, 0, 0, 0.5}), results, 0.000001))
+	assert.InEpsilon(t, 10.5, score, 0.000001)
+}
+
+func TestSimplex5(t *testing.T) {
+	c := mat.NewDense(1, 4, []float64{5, 6, 9, 8})
+	A := mat.NewDense(2, 4, []float64{
+		1, 2, 3, 1,
+		1, 1, 2, 3,
+	})
+	b := mat.NewDense(2, 1, []float64{5, 3})
+
+	totalIter, results, score, err := Simplex(c, A, b, 10)
+	require.NoError(t, err)
+	assert.Equal(t, 4, totalIter)
+	assert.True(t, mat.EqualApprox(mat.NewDense(6, 1, []float64{1, 2, 0, 0, 0, 0}), results, 0.000001))
+	assert.InEpsilon(t, 17.0, score, 0.000001)
+}
+
+func TestSimplex6(t *testing.T) {
+	c := mat.NewDense(1, 4, []float64{10, -57, -9, -24})
+	A := mat.NewDense(3, 4, []float64{
+		0.5, -5.5, -2.5, 9,
+		0.5, -1.5, -0.5, 1,
+		1, 0, 0, 0,
+	})
+	b := mat.NewDense(3, 1, []float64{0, 0, 1})
+
+	totalIter, results, score, err := Simplex(c, A, b, 10)
+	require.NoError(t, err)
+	assert.Equal(t, 4, totalIter)
+	assert.True(t, mat.EqualApprox(mat.NewDense(7, 1, []float64{1, 0, 1, 0, 2, 0, 0}), results, 0.000001))
+	assert.InEpsilon(t, 1.0, score, 0.000001)
+}
+
 func TestIter(t *testing.T) {
-	z := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
+	c := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
 	AConstraints := mat.NewDense(3, 4, []float64{
 		2, 4, 5, 7,
 		1, 1, 2, 2,
@@ -66,7 +113,7 @@ func TestIter(t *testing.T) {
 	b := mat.NewDense(3, 1, []float64{42, 17, 24})
 
 	cf := CanonicalForm{}
-	err := cf.New(z, AConstraints, b)
+	err := cf.New(c, AConstraints, b)
 	require.NoError(t, err)
 
 	end, err := cf.Iter(2)
@@ -115,7 +162,7 @@ func TestIter(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	z := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
+	c := mat.NewDense(1, 4, []float64{7, 9, 18, 17})
 	AConstraints := mat.NewDense(3, 4, []float64{
 		2, 4, 5, 7,
 		1, 1, 2, 2,
@@ -124,7 +171,7 @@ func TestNew(t *testing.T) {
 	b := mat.NewDense(3, 1, []float64{42, 17, 24})
 
 	cf := CanonicalForm{}
-	err := cf.New(z, AConstraints, b)
+	err := cf.New(c, AConstraints, b)
 	require.NoError(t, err)
 
 	assert.Equal(t, cf.m, 3)
@@ -177,11 +224,4 @@ func TestNew(t *testing.T) {
 	assert.True(t, mat.Equal(mat.NewDense(3, 3, []float64{1, 0, 5, 0, 1, 2, 0, 0, 3}), cf.B))
 
 	assert.True(t, mat.Equal(mat.NewDense(1, 3, []float64{0, 0, 18}), cf.cB))
-}
-
-func TestInverse(t *testing.T) {
-	B := mat.NewDense(3, 3, []float64{1, 0, 0, 0, 1, 0, 0, 0, 1})
-	BInv := mat.DenseCopyOf(B)
-	err := B.Inverse(BInv)
-	require.NoError(t, err)
 }
