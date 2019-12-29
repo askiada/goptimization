@@ -74,13 +74,11 @@ type CanonicalForm struct {
 	//Row Vector (n)
 	cN *mat.Dense
 
-	remap map[int]int
+	remap []int
 }
 
 //New Initialize all the parameters in order to run the simplex algorithm
 func (cf *CanonicalForm) New(c, A, b *mat.Dense) error {
-
-	cf.remap = make(map[int]int)
 
 	rows, cols := c.Dims()
 	if rows > 1 {
@@ -119,12 +117,10 @@ func (cf *CanonicalForm) New(c, A, b *mat.Dense) error {
 	cf.cN = cf.c.Slice(0, 1, 0, cf.n).(*mat.Dense)
 
 	//Store the entring and leaving pairs for each iteration
-	j := 0
-	for i := cf.n; i < cf.n+cf.m; i++ {
-		cf.remap[i] = j
-		j++
+	cf.remap = make([]int, cf.n+cf.m)
+	for i := 0; i < cf.n+cf.m; i++ {
+		cf.remap[i] = i
 	}
-
 	return nil
 }
 
@@ -222,7 +218,6 @@ func (cf *CanonicalForm) FindLeavingVariable(d *mat.Dense) (float64, int, error)
 	}
 	fmt.Println("x", x)
 	fmt.Println("leavingVarIndex", leavingVarIndex)
-	delete(cf.remap, cf.n+leavingVarIndex)
 	return x, leavingVarIndex, nil
 }
 
@@ -286,8 +281,11 @@ func (cf *CanonicalForm) Iter(forceEnteringVarIndex int) (bool, error) {
 	if leavingVarIndex == -1 {
 		return true, nil
 	}
+
 	//Store the new pair of entering/leaving variables
-	cf.remap[enteringVarIndex] = leavingVarIndex
+	tmp := cf.remap[cf.n+leavingVarIndex]
+	cf.remap[cf.n+leavingVarIndex] = enteringVarIndex
+	cf.remap[enteringVarIndex] = tmp
 
 	// Update the dictionary for the next iteration
 	err = cf.Update(d, y, x, enteringVarIndex, leavingVarIndex)
@@ -309,13 +307,10 @@ func (cf *CanonicalForm) GetResults() (*mat.Dense, float64) {
 	result := mat.NewDense(rows, cols, nil)
 	result.Zero()
 
-	for xEntering := 0; xEntering < rows; xEntering++ {
-		if xLeaving, ok := cf.remap[xEntering]; ok {
-			result.Set(xEntering, 0, cf.xBStar.At(xLeaving, 0))
-			if xEntering < cf.n {
-				fmt.Println(xLeaving, xEntering)
-				total += cf.xBStar.At(xLeaving, 0) * cf.cN.At(0, xEntering)
-			}
+	for i := cf.n; i < cf.n+cf.m; i++ {
+		result.Set(cf.remap[i], 0, cf.xBStar.At(i-cf.n, 0))
+		if cf.remap[i] < cf.n {
+			total += cf.xBStar.At(i-cf.n, 0) * cf.cN.At(0, cf.remap[i])
 		}
 	}
 
