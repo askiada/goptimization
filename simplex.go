@@ -151,7 +151,6 @@ func (cf *CanonicalForm) FindEnteringVariable(y *mat.Dense, forceEnteringVarInde
 	m.Mul(y, cf.AN)
 	m.Sub(cf.cN, &m)
 
-	fmt.Printf("m:\n %v\n\n", mat.Formatted(&m, mat.Prefix(" "), mat.Excerpt(8)))
 	_, c := m.Dims()
 
 	enteringVarIndex := -1
@@ -234,14 +233,16 @@ func (cf *CanonicalForm) Update(d, y *mat.Dense, x float64, enteringVarIndex, le
 
 	r, _ := d.Dims()
 
-	fmt.Printf("AN:\n %v\n\n", mat.Formatted(cf.AN, mat.Prefix(" "), mat.Excerpt(8)))
-
+	leavingCol := mat.DenseCopyOf(cf.B.ColView(leavingVarIndex))
+	leavingC := cf.cB.At(0, leavingVarIndex)
 	for i := 0; i < r; i++ {
 		cf.B.Set(i, leavingVarIndex, cf.AN.At(i, enteringVarIndex))
+		cf.AN.Set(i, enteringVarIndex, leavingCol.At(i, 0))
 	}
-	fmt.Printf("B:\n %v\n\n", mat.Formatted(cf.B, mat.Prefix(" "), mat.Excerpt(8)))
-
 	cf.cB.Set(0, leavingVarIndex, cf.cN.At(0, enteringVarIndex))
+	cf.cN.Set(0, enteringVarIndex, leavingC)
+
+	fmt.Printf("A:\n %v\n\n", mat.Formatted(cf.A, mat.Prefix(" "), mat.Excerpt(8)))
 
 	fmt.Printf("cB:\n %v\n\n", mat.Formatted(cf.cB, mat.Prefix(" "), mat.Excerpt(8)))
 
@@ -310,7 +311,7 @@ func (cf *CanonicalForm) GetResults() (*mat.Dense, float64) {
 	for i := cf.n; i < cf.n+cf.m; i++ {
 		result.Set(cf.remap[i], 0, cf.xBStar.At(i-cf.n, 0))
 		if cf.remap[i] < cf.n {
-			total += cf.xBStar.At(i-cf.n, 0) * cf.cN.At(0, cf.remap[i])
+			total += cf.xBStar.At(i-cf.n, 0) * cf.c.At(0, i)
 		}
 	}
 
